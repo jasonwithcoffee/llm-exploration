@@ -3,7 +3,7 @@ import uuid
 import boto3
 
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('restaurant_bookings')
+table = dynamodb.Table('payment_schedules')
 
 def get_named_parameter(event, name):
     """
@@ -12,64 +12,46 @@ def get_named_parameter(event, name):
     return next(item for item in event['parameters'] if item['name'] == name)['value']
 
 
-def get_booking_details(booking_id):
+def get_payment_details(payment_id):
     """
-    Retrieve details of a restaurant booking
+    Retrieve details of a payment schedule
     
     Args:
-        booking_id (string): The ID of the booking to retrieve
+        payment_id (string): The ID of the payment to retrieve
     """
     try:
-        response = table.get_item(Key={'booking_id': booking_id})
+        response = table.get_item(Key={'payment_id': payment_id})
         if 'Item' in response:
             return response['Item']
         else:
-            return {'message': f'No booking found with ID {booking_id}'}
+            return {'message': f'No payment found with Invoice ID {payment_id}.'}
     except Exception as e:
         return {'error': str(e)}
 
 
-def create_booking(date, name, hour, num_guests):
+def create_payment(invoice_id, name, insurance_id, date):
     """
-    Create a new restaurant booking
+    Create a new payment schedule
     
     Args:
-        date (string): The date of the booking
-        name (string): Name to idenfity your reservation
-        hour (string): The hour of the booking
-        num_guests (integer): The number of guests for the booking
+        invoice_id (string): Invoice ID of the payment
+        name (string): Name of the patient
+        insurance_id (string): Insurance ID of the patient
+        date (string): The date of the payment
     """
     try:
-        booking_id = str(uuid.uuid4())[:8]
         table.put_item(
             Item={
-                'booking_id': booking_id,
-                'date': date,
+                'payment_id': invoice_id,
                 'name': name,
-                'hour': hour,
-                'num_guests': num_guests
+                'insurance_id': insurance_id,
+                'date': date
             }
         )
-        return {'booking_id': booking_id}
+        return {'payment_id': invoice_id}
     except Exception as e:
         return {'error': str(e)}
 
-
-def delete_booking(booking_id):
-    """
-    Delete an existing restaurant booking
-    
-    Args:
-        booking_id (str): The ID of the booking to delete
-    """
-    try:
-        response = table.delete_item(Key={'booking_id': booking_id})
-        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-            return {'message': f'Booking with ID {booking_id} deleted successfully'}
-        else:
-            return {'message': f'Failed to delete booking with ID {booking_id}'}
-    except Exception as e:
-        return {'error': str(e)}
     
 
 def lambda_handler(event, context):
@@ -82,33 +64,25 @@ def lambda_handler(event, context):
     # parameters to invoke function with
     parameters = event.get('parameters', [])
 
-    if function == 'get_booking_details':
-        booking_id = get_named_parameter(event, "booking_id")
-        if booking_id:
-            response = str(get_booking_details(booking_id))
+    if function == 'get_payment_details':
+        payment_id = get_named_parameter(event, "payment_id")
+        if payment_id:
+            response = str(get_payment_details(payment_id))
             responseBody = {'TEXT': {'body': json.dumps(response)}}
         else:
-            responseBody = {'TEXT': {'body': 'Missing booking_id parameter'}}
+            responseBody = {'TEXT': {'body': 'Missing payment_id parameter'}}
 
-    elif function == 'create_booking':
-        date = get_named_parameter(event, "date")
+    elif function == 'create_payment':
+        invoice_id = get_named_parameter(event, "invoice_id")
         name = get_named_parameter(event, "name")
-        hour = get_named_parameter(event, "hour")
-        num_guests = get_named_parameter(event, "num_guests")
+        insurance_id = get_named_parameter(event, "insurance_id")
+        date = get_named_parameter(event, "date")
 
-        if date and hour and num_guests:
-            response = str(create_booking(date, name, hour, num_guests))
+        if invoice_id and name and insurance_id and date:
+            response = str(create_payment(invoice_id, name, insurance_id, date))
             responseBody = {'TEXT': {'body': json.dumps(response)}}
         else:
             responseBody = {'TEXT': {'body': 'Missing required parameters'}}
-
-    elif function == 'delete_booking':
-        booking_id = get_named_parameter(event, "booking_id")
-        if booking_id:
-            response = str(delete_booking(booking_id))
-            responseBody = {'TEXT': {'body': json.dumps(response)}}
-        else:
-            responseBody = {'TEXT': {'body': 'Missing booking_id parameter'}}
 
     else:
         responseBody = {'TEXT': {'body': 'Invalid function'}}

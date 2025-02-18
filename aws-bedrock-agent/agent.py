@@ -15,18 +15,18 @@ lambda_client = boto3.client('lambda')
 bedrock_agent_client = boto3.client('bedrock-agent')
 
 
-def create_dynamodb(table_name):
+def create_dynamodb(table_name, search_key):
     table = dynamodb_resource.create_table(
         TableName=table_name,
         KeySchema=[
             {
-                'AttributeName': 'booking_id',
+                'AttributeName': f'{search_key}',
                 'KeyType': 'HASH'
             }
         ],
         AttributeDefinitions=[
             {
-                'AttributeName': 'booking_id',
+                'AttributeName': f'{search_key}',
                 'AttributeType': 'S'
             }
         ],
@@ -36,7 +36,7 @@ def create_dynamodb(table_name):
     # Wait for the table to be created
     print(f'Creating table {table_name}...')
     table.wait_until_exists()
-    print(f'Table {table_name} created successfully!')
+    print(f'Table {table_name} with key {search_key} created successfully!')
     return
 
 
@@ -311,3 +311,4 @@ def clean_up_resources(
         print(f"Table {table_name} has been deleted.")
     except Exception as e:
         print(f"Error deleting table {table_name}: {e}")
+
