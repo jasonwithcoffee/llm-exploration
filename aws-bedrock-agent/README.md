@@ -54,9 +54,15 @@ Agent: According to the search results, your invoice shows that you had a Routin
 ## Payments Agent
 
 ```
-User: My name is Grace Hopper and I want to create a payment schedule on 5th of May 2025.
+User: My name is Grace Hopper and I want to create a payment schedule.
 
-Agent: I apologize, but I don't have any information about your invoice details in my knowledge base. Could you please provide me with your invoice ID or other relevant details so that I can look up the information and help you set up a payment schedule? I'd be happy to assist you once I have the necessary details.
+Agent: To set up a payment schedule for you, Grace, I will need the following information:
+
+- The date of your dental appointment or procedure
+- Your insurance ID number
+- The invoice ID for the payment you need to make
+
+Once I have those details, I can create a payment schedule for you. Please provide that information and I'll be happy to assist you further.
 ```
 ```
 User: My name is Grace Hopper and I want to create a payment schedule on 5th of May 2025. My insurance ID is HELLO123. Invoice ID is 332211
@@ -117,4 +123,10 @@ Agent: You're welcome Gordon! I'm glad I could assist you with checking the avai
 
 # Improvement Areas
 
-Create automated testing for agents.
+What are some areas of improvement?
+
+1. Create automated testing and evaluation for agents - for faster, more reliable model update lifecycle.
+2. Clean and ingest invoices into a database using batch inference or data automation - increased speed and reduce cost
+3. Few shot prompting for agents - better training, smarter, more consistent behavior
+4. Improved prompt engineering to reduce security and privacy risks - protection from bad actors
+
